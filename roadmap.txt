@@ -1,0 +1,164 @@
+1> Modules, Packages, NPM ----------> Complete at 56:30.
+    for nodemon type(npm install nodemon --save-dev ) then in package.js type in script("start": "nodemon index.js",). Now we can run npm start.
+
+
+
+
+
+2> Server concepts -> with Node ----------> Complete at 02:07:10.
+    const fs = require('fs');
+
+    const txt = fs.readFileSync('demo.txt','utf-8');
+
+    fs.readFile('demo.txt','utf-8',(err, txt)=>{
+       console.log(txt)
+    });
+
+    console.log(txt);
+
+
+
+
+
+3> Web server -> Express Js ----------> Complete at 03:01:52
+    There are three ways to send data in req query: a>query parameters  b>URL parameters(params)  c>Inside the body
+
+    const data=JSON.parse(fs.readFileSync('data.json','utf-8'));  //we have file date.json in same folder. Copied api from dummyapi.com
+    const products=data.products;
+
+    const express=require('express');
+    const server=express();
+
+    //MIddleWare
+    server.use(express.json());  ////use of read json file send from body in postman.  Before we use it as bodyParser.
+    server.use(express.urlencoded());
+    server.use(express.static('public'));  ////Make file in static folder and write file index.html to default start.
+
+    const auth=(req,res,next)=>{
+    // if(req.query.password=='123')   //type (/?password=123) after localhost:8080.   This is Query parameter.
+    if(req.body.password=='123')    //if password pass from body or go in postmon then raw then select json and pass {"password":123}  .This is send from body.
+        next();
+    else
+        res.sendStatus(401);
+    }
+
+    //API - Endpoint - Route
+    server.get('/',auth,(req,res)=>{
+        res.json({type:'GET'})
+    })
+
+    server.get('/demo', (req,res)=>{
+        // res.send("<h1>Hello world</h1>");
+        // res.sendStatus(404);
+        res.json(products);
+    });
+
+    server.listen(8080, ()=>{
+        console.log('server started');
+    });
+
+
+
+
+
+4> REST API -> Express Js ----------> Complete at 03:33:55
+    ////Create Rest API using POST /products  
+    ////This is always sent by user. We can chech by postman in POST body and select raw and JSON and add new object with id 31 in products.
+    server.post('/products', (req,res)=>{
+        products.push(req.body);
+        res.status(201).json(req.body);
+    })
+
+    ////Read Rest API using GET /products
+    server.get('/products', (req, res)=>{
+        res.json(products);
+    });
+    ////Read Rest API using GET /products:id
+    server.get('/products/:id', (req, res)=>{
+        const id=+req.params.id;
+        const product=products.find((p)=>p.id===id);
+        res.json(product);
+    });
+
+    ////UPDATE Rest API using PUT /products:id
+    ////To check go to postman select PUT body and select raw and JSON and add new object and link localhost:8080/products/1. This will update which id=1
+    server.put('/products/:id', (req, res)=>{
+        const id=+req.params.id;
+        const productIndex=products.findIndex((p)=>p.id===id);
+        products.splice(productIndex,1,{id:id, ...req.body});
+        res.status(201).json({product: 'Updated'});
+    });
+
+    ////UPDATE Rest API using PATCH /products:id
+    ////Same as PUT but it will only update what we change else all is same.
+    server.patch('/products/:id', (req, res)=>{
+        const id=+req.params.id;
+        const productIndex=products.findIndex((p)=>p.id===id);
+        const product=products[productIndex];
+        products.splice(productIndex,1,{...product ,...req.body});
+        res.status(201).json({product: 'patched'});
+    });
+
+    ////DELETE Rest API using DELETE /products:id
+    ////To check go to postman select DELETE body and select raw and JSON and add new object and link localhost:8080/products/1. This will delete which id=1
+    server.delete('/products/:id', (req, res)=>{
+        const id=+req.params.id;
+        const productIndex=products.findIndex((p)=>p.id===id);
+        const product=products[productIndex];
+        products.splice(productIndex,1);
+        res.status(201).json(product);
+    });
+
+
+
+    
+
+5> File Structure -> MVC ----------> Complete at 04:13:05
+
+6> MongoDB, Mongo Atlas ----------> Complete at 06:02:05
+    DB Server - Database - Collections - Document
+
+    ->For installation go to youtube -> CS CORNER Sunita Rai (How to install MongoDB 6.0.3 on Windows 11 | Install MongoDB 6.0.3 & Mongo Shell | MongoDB Tutorial.)
+
+    1> Go to cmd and type mongod. (This will run the server.)
+    2> Go to C:\mongosh\mongosh-1.8.1-win32-x64\bin and run mongosh file. (This will open mongo shell where we can run mongodb commands.)  OR run mongosh in cmd.
+
+    show dbs, use local, show collections, use ecommerce, exit(), show dbs(ecommerce not shown their bcz no any collection is inserted), use ecommerce,
+    db.products.insertOne({'title':'iphone'}) ->Insert one document.
+    db.products.find() ->print all documents of product.
+    db.products.insertMany([{..},{..},..])
+    db.products.findOne({title: "iPhone 9"}) ->Show only the first match with this title.
+    db.products.find({title: "iPhone 9"})  ->Show all match with this title.
+    db.products.find({title: {$eq:"iPhone 9" }})
+    db.products.find({title: {$eq:"iPhone 9" }, id:{$lt:2}})  ->this includes and treats as and(i.e. title and id)
+    db.products.find({$and:[{title: {$eq:"iPhone 9" }}, {id:{$gt:0}}]}) ->same as above command.
+    db.products.find({$or:[{title: {$eq:"iPhone 9" }}, {id:{$gt:0}}]})
+    db.products.find({$or:[{title: {$eq:"iPhone 9" }}, {id:{$gt:0}}]}).sort({"price":1})  ->Sort in ascending order.
+    db.products.find({$or:[{title: {$eq:"iPhone 9" }}, {id:{$gt:0}}]}).sort({"price":-1})  ->Sort in decending order.
+    db.products.find({$or:[{title: {$eq:"iPhone 9" }}, {id:{$gt:0}}]}).sort({"price":1}).limit(2)  ->Show only two documents.
+    db.products.countDocuments()
+    db.products.countDocuments({'price':{$gt:600}})
+    db.products.find({'price':{$gt:600}})
+    db.products.find({'price':{$gt:600}})
+    db.products.find({'price':{$gt:600}},{'title':1 , 'price':1})  ->Gives only title and price of each document which price greater than 600. (we can write 0 to not show.)
+
+    db.products.updateOne({'id':1}, {$set:{'price':999}})
+
+    <<<----->>> 05:10:00 <<<----->>>
+
+
+ 
+
+
+
+7> Mongoose ----------> Complete at 07:20:38
+
+8> React Integration ----------> Complete at 08:11:27
+
+9> Deploy MERN App on live cloud server ----------> Complete at 08:48:54
+
+10> Server-Side Rendering-with EJS ----------> Complete at 09:30:39
+
+11> JWT, Auth ----------> Complete at 10:42:30
+
+12> Streams, Events, Sockets-socket.io ----------> Complete at 11:59:57
